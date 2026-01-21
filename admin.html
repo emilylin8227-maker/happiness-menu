@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>幸福食堂 - 管理後台</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(180deg, #f5f5f5, #e0e0e0);
+      font-family: "Noto Sans TC", sans-serif;
+      padding: 20px;
+    }
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #ff9800;
+    }
+    .header h1 {
+      color: #ff9800;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .dish-card {
+      background: #f9f9f9;
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 2px solid #e0e0e0;
+    }
+    .dish-card:hover {
+      border-color: #ff9800;
+      box-shadow: 0 5px 15px rgba(255, 152, 0, 0.2);
+    }
+    .preview-img {
+      width: 100%;
+      max-width: 300px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 15px;
+      margin-top: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .btn-upload {
+      background: #ff9800;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .btn-upload:hover {
+      background: #f57c00;
+      transform: translateY(-2px);
+    }
+    .btn-save {
+      background: #4caf50;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: all 0.3s;
+      margin-top: 20px;
+    }
+    .btn-save:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    }
+    .btn-preview {
+      background: #2196f3;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: all 0.3s;
+      margin-left: 10px;
+    }
+    .btn-preview:hover {
+      background: #1976d2;
+      transform: translateY(-2px);
+    }
+    .btn-reset {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      margin-left: 10px;
+    }
+    .btn-reset:hover {
+      background: #d32f2f;
+    }
+    input[type="text"], select {
+      border-radius: 10px;
+      border: 2px solid #e0e0e0;
+      padding: 10px 15px;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: #ff9800;
+      outline: none;
+    }
+    .success-message {
+      background: #4caf50;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+      text-align: center;
+      font-weight: bold;
+    }
+    .dish-number {
+      background: #ff9800;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="header">
+      <h1>🍱 幸福食堂管理後台</h1>
+      <p class="text-muted">上傳菜色圖片，編輯菜單資訊</p>
+    </div>
+
+    <div id="dishesContainer"></div>
+
+    <!-- Logo 設定 -->
+    <div class="dish-card" style="border: 3px solid #2196f3; background: #f0f8ff;">
+      <div class="row align-items-center">
+        <div class="col-12 mb-3">
+          <span class="dish-number" style="background: #2196f3;">🏢</span>
+          <strong style="font-size: 1.3rem;">公司 Logo 設定</strong>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label"><strong>顯示 Logo</strong></label>
+            <select class="form-select" id="logoEnabled">
+              <option value="true">是</option>
+              <option value="false">否</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"><strong>Logo 位置</strong></label>
+            <select class="form-select" id="logoPosition">
+              <option value="center">首頁中央（大）</option>
+              <option value="top-left">左上角（小）</option>
+              <option value="top-center">頂部中央（中）</option>
+            </select>
+          </div>
+          <div>
+            <input type="file" id="logoFile" accept="image/*" style="display: none;" onchange="handleLogoUpload()">
+            <button class="btn-upload" style="background: #2196f3;" onclick="document.getElementById('logoFile').click()">
+              🖼️ 上傳 Logo
+            </button>
+            <button class="btn-upload" onclick="removeLogoFile()" style="background: #f44336; margin-left: 10px;">
+              🗑️ 移除 Logo
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 text-center">
+          <div id="logoStatus" style="padding: 20px; background: #f5f5f5; border-radius: 15px; margin-top: 10px;">
+            <p style="margin: 0; color: #666;">尚未上傳 Logo</p>
+          </div>
+          <img id="logoPreview" style="max-width: 200px; max-height: 200px; margin-top: 15px; display: none; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+        </div>
+      </div>
+    </div>
+
+    <!-- 背景音樂設定 -->
+    <div class="dish-card" style="border: 3px solid #ff9800; background: #fff9f0;">
+      <div class="row align-items-center">
+        <div class="col-12 mb-3">
+          <span class="dish-number">🎵</span>
+          <strong style="font-size: 1.3rem;">背景音樂設定</strong>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label"><strong>啟用背景音樂</strong></label>
+            <select class="form-select" id="musicEnabled">
+              <option value="true">是</option>
+              <option value="false">否</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"><strong>音量大小 (0-100)</strong></label>
+            <input type="range" class="form-range" id="musicVolume" min="0" max="100" value="50">
+            <div class="text-center"><span id="volumeDisplay">50</span>%</div>
+          </div>
+          <div>
+            <input type="file" id="musicFile" accept="audio/*" style="display: none;" onchange="handleMusicUpload()">
+            <button class="btn-upload" onclick="document.getElementById('musicFile').click()">
+              🎵 上傳音樂檔案
+            </button>
+            <button class="btn-upload" onclick="removeMusicFile()" style="background: #f44336; margin-left: 10px;">
+              🗑️ 移除音樂
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 text-center">
+          <div id="musicStatus" style="padding: 20px; background: #f5f5f5; border-radius: 15px; margin-top: 10px;">
+            <p style="margin: 0; color: #666;">尚未上傳音樂</p>
+          </div>
+          <audio id="musicPreview" controls style="width: 100%; margin-top: 15px; display: none;"></audio>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button class="btn-save" onclick="saveAllDishes()">💾 儲存所有變更</button>
+      <button class="btn-preview" onclick="previewMenu()">👁️ 預覽菜單</button>
+      <button class="btn-reset" onclick="resetToDefault()">🔄 恢復預設</button>
+    </div>
+
+    <div id="successMessage" class="success-message">
+      ✅ 儲存成功！資料已更新
+    </div>
+  </div>
+
+  <script>
+    // 預設菜品資料
+    const defaultDishes = [
+      {
+        name: '日式雞排',
+        tag: '黃金酥脆',
+        category: '主菜',
+        image: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=800&h=800&fit=crop',
+        showYummy: true
+      },
+      {
+        name: '咖哩肉末',
+        tag: '咖哩控白飯殺手',
+        category: '主菜',
+        image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&h=800&fit=crop',
+        showYummy: false
+      },
+      {
+        name: '蜜汁地瓜',
+        tag: '天然甜點',
+        category: '配菜',
+        image: 'https://images.unsplash.com/photo-1568477988743-24e161afc111?w=800&h=800&fit=crop',
+        showYummy: false
+      },
+      {
+        name: '炒青花菜',
+        tag: '低卡高纖',
+        category: '蔬菜',
+        image: 'https://images.unsplash.com/photo-1628773822503-930a7eaecf80?w=800&h=800&fit=crop',
+        showYummy: false
+      },
+      {
+        name: '清炒高麗菜',
+        tag: '清炒低負擔',
+        category: '蔬菜',
+        image: 'https://images.unsplash.com/photo-1567338217310-275c2b79c90e?w=800&h=800&fit=crop',
+        showYummy: false
+      }
+    ];
+
+    // 載入或初始化菜品資料
+    function loadDishes() {
+      let dishes = localStorage.getItem('menuDishes');
+      if (!dishes) {
+        dishes = defaultDishes;
+        localStorage.setItem('menuDishes', JSON.stringify(dishes));
+      } else {
+        dishes = JSON.parse(dishes);
+      }
+      return dishes;
+    }
+
+    // 載入音樂設定
+    function loadMusicSettings() {
+      const musicEnabled = localStorage.getItem('musicEnabled') || 'false';
+      const musicVolume = localStorage.getItem('musicVolume') || '50';
+      const musicData = localStorage.getItem('musicData');
+      const musicName = localStorage.getItem('musicName');
+
+      document.getElementById('musicEnabled').value = musicEnabled;
+      document.getElementById('musicVolume').value = musicVolume;
+      document.getElementById('volumeDisplay').textContent = musicVolume;
+
+      if (musicData && musicName) {
+        document.getElementById('musicStatus').innerHTML = `
+          <p style="margin: 0; color: #4caf50; font-weight: bold;">✅ 已上傳音樂</p>
+          <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">${musicName}</p>
+        `;
+        document.getElementById('musicPreview').src = musicData;
+        document.getElementById('musicPreview').style.display = 'block';
+      }
+    }
+
+    // 載入 Logo 設定
+    function loadLogoSettings() {
+      const logoEnabled = localStorage.getItem('logoEnabled') || 'true';
+      const logoPosition = localStorage.getItem('logoPosition') || 'center';
+      const logoData = localStorage.getItem('logoData');
+      const logoName = localStorage.getItem('logoName');
+
+      document.getElementById('logoEnabled').value = logoEnabled;
+      document.getElementById('logoPosition').value = logoPosition;
+
+      if (logoData && logoName) {
+        document.getElementById('logoStatus').innerHTML = `
+          <p style="margin: 0; color: #4caf50; font-weight: bold;">✅ 已上傳 Logo</p>
+          <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">${logoName}</p>
+        `;
+        document.getElementById('logoPreview').src = logoData;
+        document.getElementById('logoPreview').style.display = 'block';
+      }
+    }
+
+    // 處理 Logo 上傳
+    function handleLogoUpload() {
+      const file = document.getElementById('logoFile').files[0];
+      if (file) {
+        // 檢查是否為圖片
+        if (!file.type.startsWith('image/')) {
+          alert('請上傳圖片檔案（JPG, PNG, GIF 等）');
+          return;
+        }
+
+        // 檢查檔案大小 (限制 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          alert('Logo 檔案太大！請選擇小於 2MB 的圖片。');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const logoData = e.target.result;
+          localStorage.setItem('logoData', logoData);
+          localStorage.setItem('logoName', file.name);
+          
+          document.getElementById('logoStatus').innerHTML = `
+            <p style="margin: 0; color: #4caf50; font-weight: bold;">✅ 已上傳 Logo</p>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">${file.name}</p>
+          `;
+          document.getElementById('logoPreview').src = logoData;
+          document.getElementById('logoPreview').style.display = 'block';
+          
+          alert('Logo 上傳成功！別忘了點擊「儲存所有變更」。');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 移除 Logo
+    function removeLogoFile() {
+      if (confirm('確定要移除 Logo 嗎？')) {
+        localStorage.removeItem('logoData');
+        localStorage.removeItem('logoName');
+        document.getElementById('logoStatus').innerHTML = `
+          <p style="margin: 0; color: #666;">尚未上傳 Logo</p>
+        `;
+        document.getElementById('logoPreview').style.display = 'none';
+        document.getElementById('logoPreview').src = '';
+        alert('Logo 已移除！');
+      }
+    }
+
+    // 處理音樂上傳
+    function handleMusicUpload() {
+      const file = document.getElementById('musicFile').files[0];
+      if (file) {
+        // 檢查檔案大小 (限制 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          alert('音樂檔案太大！請選擇小於 10MB 的檔案。');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const musicData = e.target.result;
+          localStorage.setItem('musicData', musicData);
+          localStorage.setItem('musicName', file.name);
+          
+          document.getElementById('musicStatus').innerHTML = `
+            <p style="margin: 0; color: #4caf50; font-weight: bold;">✅ 已上傳音樂</p>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #666;">${file.name}</p>
+          `;
+          document.getElementById('musicPreview').src = musicData;
+          document.getElementById('musicPreview').style.display = 'block';
+          
+          alert('音樂上傳成功！別忘了點擊「儲存所有變更」。');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 移除音樂
+    function removeMusicFile() {
+      if (confirm('確定要移除背景音樂嗎？')) {
+        localStorage.removeItem('musicData');
+        localStorage.removeItem('musicName');
+        document.getElementById('musicStatus').innerHTML = `
+          <p style="margin: 0; color: #666;">尚未上傳音樂</p>
+        `;
+        document.getElementById('musicPreview').style.display = 'none';
+        document.getElementById('musicPreview').src = '';
+        alert('音樂已移除！');
+      }
+    }
+
+    // 音量滑桿監聽
+    document.addEventListener('DOMContentLoaded', function() {
+      const volumeSlider = document.getElementById('musicVolume');
+      const volumeDisplay = document.getElementById('volumeDisplay');
+      
+      volumeSlider.addEventListener('input', function() {
+        volumeDisplay.textContent = this.value;
+      });
+    });
+
+    // 渲染所有菜品卡片
+    function renderDishes() {
+      const dishes = loadDishes();
+      const container = document.getElementById('dishesContainer');
+      container.innerHTML = '';
+
+      dishes.forEach((dish, index) => {
+        const card = document.createElement('div');
+        card.className = 'dish-card';
+        card.innerHTML = `
+          <div class="row align-items-center">
+            <div class="col-12 mb-3">
+              <span class="dish-number">${index + 1}</span>
+              <strong style="font-size: 1.2rem;">菜品 ${index + 1}</strong>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label"><strong>菜名</strong></label>
+                <input type="text" class="form-control" id="name-${index}" value="${dish.name}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label"><strong>標籤</strong></label>
+                <input type="text" class="form-control" id="tag-${index}" value="${dish.tag}">
+              </div>
+              <div class="mb-3">
+                <label class="form-label"><strong>分類</strong></label>
+                <select class="form-select" id="category-${index}">
+                  <option value="主菜" ${dish.category === '主菜' ? 'selected' : ''}>主菜</option>
+                  <option value="配菜" ${dish.category === '配菜' ? 'selected' : ''}>配菜</option>
+                  <option value="蔬菜" ${dish.category === '蔬菜' ? 'selected' : ''}>蔬菜</option>
+                  <option value="湯品" ${dish.category === '湯品' ? 'selected' : ''}>湯品</option>
+                  <option value="甜點" ${dish.category === '甜點' ? 'selected' : ''}>甜點</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label"><strong>顯示 "yummy yummy"</strong></label>
+                <select class="form-select" id="yummy-${index}">
+                  <option value="true" ${dish.showYummy ? 'selected' : ''}>是</option>
+                  <option value="false" ${!dish.showYummy ? 'selected' : ''}>否</option>
+                </select>
+              </div>
+              <div>
+                <input type="file" id="file-${index}" accept="image/*" style="display: none;" onchange="handleImageUpload(${index})">
+                <button class="btn-upload" onclick="document.getElementById('file-${index}').click()">
+                  📷 上傳圖片
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6 text-center">
+              <img id="preview-${index}" src="${dish.image}" alt="${dish.name}" class="preview-img">
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 處理圖片上傳
+    function handleImageUpload(index) {
+      const file = document.getElementById(`file-${index}`).files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById(`preview-${index}`).src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 儲存所有菜品
+    function saveAllDishes() {
+      const dishes = loadDishes();
+      
+      dishes.forEach((dish, index) => {
+        dish.name = document.getElementById(`name-${index}`).value;
+        dish.tag = document.getElementById(`tag-${index}`).value;
+        dish.category = document.getElementById(`category-${index}`).value;
+        dish.showYummy = document.getElementById(`yummy-${index}`).value === 'true';
+        dish.image = document.getElementById(`preview-${index}`).src;
+      });
+
+      localStorage.setItem('menuDishes', JSON.stringify(dishes));
+      
+      // 儲存 Logo 設定
+      localStorage.setItem('logoEnabled', document.getElementById('logoEnabled').value);
+      localStorage.setItem('logoPosition', document.getElementById('logoPosition').value);
+      
+      // 儲存音樂設定
+      localStorage.setItem('musicEnabled', document.getElementById('musicEnabled').value);
+      localStorage.setItem('musicVolume', document.getElementById('musicVolume').value);
+      
+      // 顯示成功訊息
+      const message = document.getElementById('successMessage');
+      message.style.display = 'block';
+      setTimeout(() => {
+        message.style.display = 'none';
+      }, 3000);
+    }
+
+    // 預覽菜單
+    function previewMenu() {
+      window.open('menu.html', '_blank');
+    }
+
+    // 恢復預設
+    function resetToDefault() {
+      if (confirm('確定要恢復預設設定嗎？這將清除所有自訂內容。')) {
+        localStorage.setItem('menuDishes', JSON.stringify(defaultDishes));
+        renderDishes();
+        alert('已恢復預設設定！');
+      }
+    }
+
+    // 頁面載入時渲染
+    renderDishes();
+    loadLogoSettings();
+    loadMusicSettings();
+  </script>
+</body>
+</html>
